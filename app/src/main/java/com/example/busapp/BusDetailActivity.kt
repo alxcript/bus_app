@@ -1,28 +1,32 @@
 package com.example.busapp
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.example.busapp.presentation.BusListScreen
+import com.example.busapp.presentation.BusListViewModel
 import com.example.busapp.ui.theme.BusAppTheme
 
 class BusDetailActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val busListViewModel: BusListViewModel by viewModels()
+
         setContent {
             BusAppTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    BusContent()
+                    val state = busListViewModel.state.value
+                    Log.d("OnBusDetailActivity2", state.buses.toString())
+                    BusListScreen(state)
                 }
             }
         }

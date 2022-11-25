@@ -65,6 +65,7 @@ class BusMapActivity : ComponentActivity() {
                             }
                         }
                     },
+                    drawerGesturesEnabled = false,
                     drawerContent = {
                         Column(
                             Modifier.fillMaxWidth().padding(16.dp),
@@ -115,7 +116,7 @@ class BusMapActivity : ComponentActivity() {
                     },
                     floatingActionButtonPosition = FabPosition.End,
                     sheetPeekHeight = 128.dp
-                ) { innerPadding ->
+                ) {
                     MyMap()
                 }
 
