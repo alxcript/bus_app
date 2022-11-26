@@ -9,6 +9,7 @@ import android.location.Location
 import android.os.Looper
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LiveData
+import com.example.busapp.models.LocationDetails
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -65,9 +66,6 @@ class LocationLiveData(var context: Context) : LiveData<LocationDetails>() {
         }
     }
 
-    /**
-     * If we've received a location update, this function will be called.
-     */
     private fun setLocationData(location: Location?) {
         location?.let { location ->
             value = LocationDetails(location.longitude.toString(), location.latitude.toString())

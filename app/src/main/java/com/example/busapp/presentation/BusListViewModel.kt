@@ -24,15 +24,13 @@ class BusListViewModel: ViewModel() {
         busRepository.getBusList().onEach { result ->
             when(result) {
                 is Result.Error -> {
-                    _state.value = BusListState(error = result.message ?: "Error Inesperado")
+                    _state.value = BusListState(error = result.message ?: "Unexpected Error")
                 }
                 is Result.Loading -> {
                     _state.value = BusListState(isLoading = true)
                 }
                 is Result.Success -> {
-                    Log.d("OnGetBusListViewModel", result.data.toString())
                     _state.value = BusListState(buses = result.data ?: emptyList())
-                    Log.d("OnGetBusListViewModel2", _state.value.buses.size.toString())
                 }
             }
         }.launchIn(viewModelScope)

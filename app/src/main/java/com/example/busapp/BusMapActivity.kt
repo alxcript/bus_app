@@ -13,19 +13,19 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.example.busapp.models.LocationDetails
+import com.example.busapp.models.User
+import com.example.busapp.repositories.LocationSender
 import com.example.busapp.ui.theme.BusAppTheme
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
@@ -35,9 +35,6 @@ import kotlinx.coroutines.launch
 @ExperimentalMaterialApi
 class BusMapActivity : ComponentActivity() {
 
-    private val locationProvider = LocationProvider(this)
-    private val permissionManager = PermissionsManager(this, locationProvider)
-
     private val applicationViewModel: ApplicationViewModel by viewModels()
 
     private lateinit var mAuth: FirebaseAuth
@@ -46,6 +43,14 @@ class BusMapActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         mAuth = FirebaseAuth.getInstance()
+
+        mAuth.currentUser?.let { currentUser ->
+            var name: String? = currentUser.displayName
+            var email: String? = currentUser.email?.split("@")?.get(0)
+            applicationViewModel.setCurrentUser(User(name, email))
+        }
+
+        applicationViewModel.getBusesCurrentLocation().addPostEventListener(applicationViewModel.getCurrentUser().email)
 
         setContent {
             BusAppTheme {
@@ -90,25 +95,13 @@ class BusMapActivity : ComponentActivity() {
                                 }
                             }
                         )
-                    },
-                    /*floatingActionButton = {
-                        var clickCount by remember { mutableStateOf(0) }
-                        FloatingActionButton(
-                            onClick = {
-                                // show snackbar as a suspend function
-                                scope.launch {
-                                    scaffoldState.snackbarHostState.showSnackbar("Snackbar #${++clickCount}")
-                                }
-                            }
-                        ) {
-                            Icon(Icons.Default.Favorite, contentDescription = "Localized description")
-                        }
-                    },
-                    floatingActionButtonPosition = FabPosition.Center*/
+                    }
                 ) { contentPadding ->
                     Box(modifier = Modifier.padding(contentPadding)) {
                         val locations by applicationViewModel.getLocationLiveData().observeAsState()
-                        MyMap(locations)
+                        val currentLocations by applicationViewModel.getBusesCurrentLocation().currentLocationDetails.observeAsState()
+                        val user: User = applicationViewModel.getCurrentUser()
+                        MyMap(locations, applicationViewModel.getLocationSender(), currentLocations, user)
                     }
                 }
             }
@@ -151,7 +144,7 @@ class BusMapActivity : ComponentActivity() {
 }
 
 @Composable
-fun MyMap(location: LocationDetails?) {
+fun MyMap(location: LocationDetails?, locationSender: LocationSender, currentLocationBuses: List<LocationDetails>?, user: User) {
     val tacna = LatLng(-18.00, -70.24)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(tacna, 16f)
@@ -160,16 +153,15 @@ fun MyMap(location: LocationDetails?) {
     Log.d("LOCC", location.toString())
     location?.let {
         LaunchedEffect(cameraPositionState.isMoving) {
-            cameraPositionState.animate(
-                update = CameraUpdateFactory.newCameraPosition(
-                    CameraPosition(LatLng(location.latitude.toDouble(), location.longitude.toDouble()), 24f, 0f, 0f)
-                ),
-                durationMs = 1000
-            )
+//            cameraPositionState.animate(
+//                update = CameraUpdateFactory.newCameraPosition(
+//                    CameraPosition(LatLng(location.latitude.toDouble(), location.longitude.toDouble()), 16f, 0f, 0f)
+//                ),
+//                durationMs = 1000
+//            )
+            locationSender.saveLocation(location, user.email)
         }
     }
-
-
 
     val uiSettings = remember {
         MapUiSettings(myLocationButtonEnabled = true)
@@ -185,10 +177,15 @@ fun MyMap(location: LocationDetails?) {
         uiSettings = uiSettings,
         properties = properties
     ) {
-        Marker(
-            state = MarkerState(position = tacna),
-            title = "Tacna",
-            snippet = "Marker in Tacna"
-        )
+        currentLocationBuses?.let { listLocations ->
+            listLocations.forEach { currentLocationBuses ->
+                var position = LatLng(currentLocationBuses.latitude.toDouble(), currentLocationBuses.longitude.toDouble())
+                Marker(
+                    state = MarkerState(position = position),
+                    title = currentLocationBuses.getBusName(),
+                    snippet = "Ltd: ${currentLocationBuses.latitude} | Lng: ${currentLocationBuses.longitude}"
+                )
+            }
+        }
     }
 }
