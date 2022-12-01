@@ -80,7 +80,6 @@ class LocationLiveData(var context: Context) : LiveData<LocationDetails>() {
             fastestInterval = ONE_MINUTE/4
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
-
     }
 
 }

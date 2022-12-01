@@ -1,45 +1,34 @@
 package com.example.busapp
 
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
-import com.example.busapp.models.Bus
-import com.example.busapp.presentation.ProfileScreen
+import com.example.busapp.presentation.BusListScreen
+import com.example.busapp.presentation.BusListViewModel
 import com.example.busapp.ui.theme.BusAppTheme
 
-class BusDetailActivity : ComponentActivity() {
-
-    private val bus: Bus by lazy {
-        intent?.getSerializableExtra(BUS_ID) as Bus
-    }
-
+class BusListActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val busListViewModel: BusListViewModel by viewModels()
+
         setContent {
             BusAppTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    ProfileScreen(bus = bus)
+                    val state = busListViewModel.state.value
+                    Log.d("OnBusDetailActivity2", state.buses.toString())
+                    BusListScreen(state, this)
                 }
             }
         }
     }
-
-    companion object {
-        private const val BUS_ID = "bus_id"
-        fun newIntent(context: Context, bus: Bus) =
-            Intent(context, BusDetailActivity::class.java).apply {
-                putExtra(BUS_ID, bus)
-            }
-    }
-
 }

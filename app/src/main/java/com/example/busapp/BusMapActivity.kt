@@ -69,7 +69,7 @@ class BusMapActivity : ComponentActivity() {
                             Text("Opciones")
                             Spacer(Modifier.height(20.dp))
                             Button(onClick = { scope.launch {
-                                startActivity(Intent(baseContext, BusDetailActivity::class.java))
+                                startActivity(Intent(baseContext, BusListActivity::class.java))
                             } }) {
                                 Text("Ver Buses")
                             }

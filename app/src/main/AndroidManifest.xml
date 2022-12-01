@@ -17,6 +17,15 @@
         android:theme="@style/Theme.BusApp"
         tools:targetApi="31">
         <activity
+            android:name=".BusDetailActivity"
+            android:exported="false"
+            android:label="@string/title_activity_bus_information"
+            android:theme="@style/Theme.BusApp">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
             android:name=".BusMapActivity"
             android:exported="false"
             android:label="@string/title_activity_bus_map"
@@ -44,7 +53,7 @@
                 android:value="" />
         </activity>
         <activity
-            android:name=".BusDetailActivity"
+            android:name=".BusListActivity"
             android:exported="false"
             android:label="@string/title_activity_bus_detail"
             android:theme="@style/Theme.BusApp">

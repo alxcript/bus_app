@@ -1,6 +1,7 @@
 package com.example.busapp.models
 
 import com.google.firebase.firestore.DocumentId
+import java.io.Serializable
 
 data class Bus(
     @DocumentId
@@ -8,5 +9,7 @@ data class Bus(
     val placa: String = "",
     val chofer: String = "",
     val capacidad: String = "",
-    val mascotaImageUrl: String = ""
-)
+    val busImageUrl: String = "",
+    val ruta: String = "",
+    val salidas: Departures = Departures()
+) : Serializable

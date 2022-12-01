@@ -4,4 +4,10 @@
     <string name="title_activity_location_tracking">LocationTrackingActivity</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="title_activity_bus_map">BusMapActivity</string>
+    <string name="title_activity_bus_information">BusInformationActivity</string>
+    <string name="driver">Chofer</string>
+    <string name="licensePlate">Placa</string>
+    <string name="capacity">Capacidad</string>
+    <string name="route">Ruta</string>
+    <string name="departures">Salidas</string>
 </resources>
