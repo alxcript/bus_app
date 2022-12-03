@@ -35,6 +35,6 @@ class ApplicationViewModel(application: Application) : AndroidViewModel(applicat
         return this.currentUser
     }
 
-    private var registeredBusEmails: List<String> = listOf("jl2019063326", "aa2019063634","bus1")
+    private var registeredBusEmails: List<String> = listOf("jl2019063326","bus1", "bus2")
 
 }

@@ -16,21 +16,27 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import com.example.busapp.models.LocationDetails
 import com.example.busapp.models.User
+import com.example.busapp.presentation.DrawerContentMenu
+import com.example.busapp.presentation.DrawerItem
 import com.example.busapp.repositories.LocationSender
+import com.example.busapp.repositories.Routes
 import com.example.busapp.ui.theme.BusAppTheme
+import com.example.busapp.utils.MapMarker
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.maps.android.compose.*
+import com.google.maps.android.ktx.utils.sphericalDistance
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @ExperimentalMaterialApi
 class BusMapActivity : ComponentActivity() {
@@ -60,30 +66,24 @@ class BusMapActivity : ComponentActivity() {
                 Scaffold(
                     drawerGesturesEnabled = false,
                     drawerContent = {
-                        Column(
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text("Opciones")
-                            Spacer(Modifier.height(20.dp))
-                            Button(onClick = { scope.launch {
-                                startActivity(Intent(baseContext, BusListActivity::class.java))
-                            } }) {
-                                Text("Ver Buses")
-                            }
-                            Spacer(Modifier.height(20.dp))
-                            Button(onClick = { scope.launch {
-                                signOut()
-                            } }) {
-                                Text("SignOut")
-                            }
-                            Spacer(Modifier.height(20.dp))
-                            Button(onClick = { scope.launch { scaffoldState.drawerState.close() } }) {
-                                Text("Close")
-                            }
-                        }
+                      DrawerContentMenu(applicationViewModel.getCurrentUser().name, mAuth.currentUser?.email, mAuth.currentUser?.photoUrl, items = DrawerItem.values().toList()) {
+                          when(it) {
+                              DrawerItem.BUSES -> {
+                                  startActivity(Intent(baseContext, BusListActivity::class.java))
+                              }
+                              DrawerItem.SIGN_OUT -> {
+                                  signOut()
+                              }
+                              DrawerItem.CLOSE -> {
+                                  scope.launch {
+                                      scaffoldState.drawerState.close()
+                                  }
+                              }
+                          }
+                          scope.launch {
+                              scaffoldState.drawerState.close()
+                          }
+                      }
                     },
                     scaffoldState = scaffoldState,
                     topBar = {
@@ -159,7 +159,10 @@ fun MyMap(location: LocationDetails?, locationSender: LocationSender, currentLoc
 //                ),
 //                durationMs = 1000
 //            )
-            locationSender.saveLocation(location, user.email)
+            Log.d("Tipo", user.type.toString())
+            if(user.type == "BUS") {
+                locationSender.saveLocation(location, user.email)
+            }
         }
     }
 
@@ -178,14 +181,42 @@ fun MyMap(location: LocationDetails?, locationSender: LocationSender, currentLoc
         properties = properties
     ) {
         currentLocationBuses?.let { listLocations ->
-            listLocations.forEach { currentLocationBuses ->
-                var position = LatLng(currentLocationBuses.latitude.toDouble(), currentLocationBuses.longitude.toDouble())
-                Marker(
-                    state = MarkerState(position = position),
-                    title = currentLocationBuses.getBusName(),
-                    snippet = "Ltd: ${currentLocationBuses.latitude} | Lng: ${currentLocationBuses.longitude}"
+            location?.let {
+                var myLoc = LatLng(location.latitude.toDouble(), location.longitude.toDouble())
+                listLocations.forEach { currentLocationBuses ->
+                    var position = LatLng(currentLocationBuses.latitude.toDouble(), currentLocationBuses.longitude.toDouble())
+                    var dis = myLoc.sphericalDistance(position)
+                    var red = (dis * 100.0).roundToInt() / 100.0
+                    MapMarker(
+                        position = position,
+                        title = currentLocationBuses.getBusName(),
+                        snippet = "Ltd: ${currentLocationBuses.latitude} | Lng: ${currentLocationBuses.longitude} | A $red metros de mi" ,
+                        context = LocalContext.current,
+                        iconResourceId = R.drawable.ic_baseline_directions_bus_24
+                    )
+                }
+            }
+
+        }
+
+        location?.let {
+            user.name?.let {
+                var myLoc = LatLng(location.latitude.toDouble(), location.longitude.toDouble())
+                MapMarker(
+                    position = myLoc,
+                    title = user.name,
+                    snippet = "Ltd: ${location.latitude} | Lng: ${location.longitude}",
+                    context = LocalContext.current,
+                    iconResourceId = R.drawable.ic_my_map_marker
                 )
             }
         }
+
+
+
+        Polyline(
+            points = Routes.routeA,
+            color = Color.Blue.copy(alpha = 0.3f)
+        )
     }
 }
